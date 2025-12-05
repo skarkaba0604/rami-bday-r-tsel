@@ -1,230 +1,470 @@
 <!DOCTYPE html>
-                              <html lang="de">
-                              <head>
-                                <meta charset="UTF-8" />
-                                <title>Capture-Rätsel</title>
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                <style>
-                                  body {
-                                    min-height: 100vh;
-                                    margin: 0;
-                                    font-family: 'Quicksand', Arial, sans-serif;
-                                    background: linear-gradient(135deg, #f8ffae 0%, #43c6ac 100%);
-                                    display: flex;
-                                    flex-direction: column;
-                                    align-items: center;
-                                    justify-content: flex-start;
-                                    color: #222;
-                                  }
-                                  .container {
-                                    background: #fff;
-                                    border-radius: 18px;
-                                    box-shadow: 0 4px 24px #0001, 0 1.5px 0 #43c6ac;
-                                    padding: 48px 38px 38px 38px;
-                                    margin-top: 48px;
-                                    max-width: 700px;
-                                    width: 99vw;
-                                    display: flex;
-                                    flex-direction: column;
-                                    align-items: center;
-                                  }
-                                  h1 {
-                                    font-size: 2.3rem;
-                                    color: #222;
-                                    letter-spacing: 1px;
-                                    text-align: center;
-                                    margin-bottom: 22px;
-                                    text-shadow: 0 2px 12px #fff7, 0 1px 0 #fff;
-                                  }
-                                  .desc {
-                                    text-align: center;
-                                    margin-bottom: 22px;
-                                    font-size: 1.25rem;
-                                  }
-                                  .captcha-grid {
-                                    display: grid;
-                                    grid-template-columns: repeat(4, 1fr);
-                                    grid-template-rows: repeat(4, 1fr);
-                                    gap: 0;
-                                    margin-bottom: 24px;
-                                    background: #eee;
-                                    border-radius: 0;
-                                    box-shadow: 0 2px 12px #43c6ac22;
-                                    position: relative;
-                                    user-select: none;
-                                    background-image: url('Bild2.jpeg');
-                                    background-size: cover;
-                                    background-position: center;
-                                    width: 464px;
-                                    height: 520px;
-                                    overflow: hidden;
-                                  }
-                                  .captcha-tile {
-                                    position: relative;
-                                    width: 100%;
-                                    height: 100%;
-                                    border: 1px solid #222;
-                                    padding: 0;
-                                    background: none;
-                                    cursor: pointer;
-                                    outline: none;
-                                    border-radius: 0;
-                                    transition: box-shadow 0.15s, background 0.15s, border-color 0.15s;
-                                    z-index: 2;
-                                    opacity: 0.97;
-                                    box-sizing: border-box;
-                                  }
-                                  .captcha-tile.selected {
-                                    background: rgba(80,80,80,0.50);
-                                    box-shadow: none;
-                                    border-color: #222;
-                                  }
-                                  .captcha-tile.correct {
-                                    background: rgba(67,198,172,0.25);
-                                    box-shadow: 0 0 0 2px #43c6ac;
-                                    border-color: #43c6ac;
-                                  }
-                                  #ergebnis {
-                                    min-height: 40px;
-                                    font-size: 1.2rem;
-                                    margin-top: 14px;
-                                    text-align: center;
-                                  }
-                                  .richtig {
-                                    background: #d4edda;
-                                    color: #155724;
-                                    border: 1px solid #c3e6cb;
-                                    border-radius: 8px;
-                                    padding: 12px;
-                                    display: inline-block;
-                                    font-size: 1.2rem;
-                                  }
-                                  .falsch {
-                                    background: #f8d7da;
-                                    color: #721c24;
-                                    border: 1px solid #f5c6cb;
-                                    border-radius: 8px;
-                                    padding: 12px;
-                                    display: inline-block;
-                                    font-size: 1.2rem;
-                                  }
-                                  #pruefenBtn {
-                                    font-size: 1.1rem;
-                                    padding: 12px 28px;
-                                    background: linear-gradient(90deg, #43c6ac 60%, #f8ffae 100%);
-                                    color: #222;
-                                    border: none;
-                                    border-radius: 8px;
-                                    font-weight: 600;
-                                    cursor: pointer;
-                                    box-shadow: 0 2px 8px #43c6ac22;
-                                    transition: background 0.18s, color 0.18s;
-                                    margin-top: 10px;
-                                    display: none;
-                                  }
-                                  #pruefenBtn:disabled {
-                                    background: #ccc;
-                                    color: #888;
-                                    cursor: not-allowed;
-                                  }
-                                  .nav-links {
-                                    margin-top: 32px;
-                                    text-align: center;
-                                    width: 100%;
-                                  }
-                                  .nav-links a {
-                                    color: #43c6ac;
-                                    text-decoration: none;
-                                    font-weight: bold;
-                                    margin: 0 12px;
-                                    font-size: 1.1rem;
-                                    transition: color 0.18s;
-                                  }
-                                  .nav-links a:hover {
-                                    color: #ffb347;
-                                  }
-                                  @media (max-width: 900px) {
-                                    .container { max-width: 99vw; }
-                                    .captcha-grid {
-                                      width: 92vw;
-                                      height: 112vw;
-                                      min-width: 0; min-height: 0;
-                                    }
-                                  }
-                                  @media (max-width: 600px) {
-                                    .container { padding: 18px 2vw 18px 2vw; }
-                                    h1 { font-size: 1.3rem; }
-                                    .desc { font-size: 1rem; }
-                                    .captcha-grid {
-                                      width: 92vw;
-                                      height: 112vw;
-                                    }
-                                  }
-                                </style>
-                              </head>
-                              <body>
-                                <div class="container">
-                                  <h1>🔍 Capture-Rätsel</h1>
-                                  <div class="desc">Klicke alle Kacheln an, die auf deinem Dickschädel sind.<br>Wähle und bestätige dann deine Lösung!</div>
-                                  <div class="captcha-grid" id="captchaGrid">
-                                    <!-- Kacheln werden per JS generiert -->
-                                  </div>
-                                  <button id="pruefenBtn" onclick="pruefeLoesung()">Lösung prüfen</button>
-                                  <div id="ergebnis"></div>
-                                  <div class="nav-links">
-                                    <a href="index.html">← Zurück zur Startseite</a> | <a href="finale.html">→ Finalen Code eingeben</a>
-                                  </div>
-                                </div>
-                                <script>
-                                  // Richtige Kacheln (Index ab 1)
-                                  const correctTiles = [2,3,4,6,7,8,10,11,12,14,15];
-                                  const gridRows = 4, gridCols = 4;
-
-                                  // Kacheln generieren
-                                  const grid = document.getElementById('captchaGrid');
-                                  for(let i=0; i<gridRows*gridCols; i++) {
-                                    const btn = document.createElement('button');
-                                    btn.className = 'captcha-tile';
-                                    btn.dataset.idx = i+1;
-                                    btn.onclick = function() {
-                                      btn.classList.toggle('selected');
-                                      document.getElementById('ergebnis').innerHTML = '';
-                                      updatePruefenBtn();
-                                      btn.classList.remove('correct');
-                                    };
-                                    grid.appendChild(btn);
-                                  }
-
-                                  function updatePruefenBtn() {
-                                    const selected = document.querySelectorAll('.captcha-tile.selected').length;
-                                    const pruefenBtn = document.getElementById('pruefenBtn');
-                                    pruefenBtn.style.display = selected > 0 ? 'block' : 'none';
-                                  }
-
-                                  function pruefeLoesung() {
-                                    const selected = Array.from(document.querySelectorAll('.captcha-tile.selected'))
-                                      .map(btn => parseInt(btn.dataset.idx));
-                                    let allCorrect = correctTiles.every(idx => selected.includes(idx));
-                                    let noWrong = selected.every(idx => correctTiles.includes(idx));
-                                    const result = document.getElementById('ergebnis');
-                                    if(selected.length === correctTiles.length && allCorrect && noWrong) {
-                                      // Nur bei richtiger Lösung grün markieren
-                                      document.querySelectorAll('.captcha-tile').forEach(btn => {
-                                        btn.classList.remove('correct');
-                                        if(btn.classList.contains('selected') && correctTiles.includes(parseInt(btn.dataset.idx))) {
-                                          btn.classList.add('correct');
-                                        }
-                                      });
-                                      result.innerHTML = '<span class="richtig">🎉 Richtig! Die Ziffer für den finalen Code ist: <b>8</b> ✅</span>';
-                                    } else {
-                                      // Bei falscher Lösung alles zurücksetzen
-                                      document.querySelectorAll('.captcha-tile').forEach(btn => {
-                                        btn.classList.remove('selected','correct');
-                                      });
-                                      result.innerHTML = '<span class="falsch">❌ Falsch! Du musst von vorne beginnen.</span>';
-                                      updatePruefenBtn();
-                                    }
-                                  }
-                                </script>
-                              </body>
-                              </html>
+                   <html lang="de">
+                   <head>
+                     <meta charset="UTF-8">
+                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                     <title>Rätsel 4 & 5</title>
+                     <style>
+                       body {
+                         font-family: Arial, sans-serif;
+                         background: linear-gradient(120deg, #43c6ac 0%, #f8ffae 100%);
+                         margin: 0;
+                         min-height: 100vh;
+                         display: flex;
+                         flex-direction: column;
+                         align-items: center;
+                         justify-content: flex-start;
+                       }
+                       .container {
+                         background: #fff;
+                         box-shadow: 0 4px 24px #43c6ac22;
+                         border-radius: 18px;
+                         padding: 32px 24px 24px 24px;
+                         margin-top: 32px;
+                         max-width: 700px;
+                         width: 96vw;
+                         text-align: center;
+                         position: relative;
+                       }
+                       #content {
+                         width: 100%;
+                         text-align: center;
+                       }
+                       h1 {
+                         font-size: 2rem;
+                         color: #43c6ac;
+                         margin-bottom: 18px;
+                       }
+                       .desc, .instructions {
+                         background: #f8ffae;
+                         color: #222;
+                         border-radius: 12px;
+                         padding: 18px;
+                         margin-bottom: 18px;
+                         font-size: 1.08rem;
+                         box-shadow: 0 2px 12px #43c6ac22;
+                       }
+                       .captcha-grid {
+                         display: grid;
+                         grid-template-columns: repeat(4, 1fr);
+                         grid-template-rows: repeat(4, 1fr);
+                         gap: 0;
+                         margin-bottom: 24px;
+                         background: #eee;
+                         border-radius: 0;
+                         box-shadow: 0 2px 12px #43c6ac22;
+                         position: relative;
+                         user-select: none;
+                         background-image: url('Bild2.jpeg');
+                         background-size: cover;
+                         background-position: center;
+                         width: 464px;
+                         height: 520px;
+                         overflow: hidden;
+                         justify-content: center;
+                         align-items: center;
+                         margin-left: auto;
+                         margin-right: auto;
+                       }
+                       .captcha-tile {
+                         position: relative;
+                         width: 100%;
+                         height: 100%;
+                         border: 1px solid #222;
+                         padding: 0;
+                         background: none;
+                         cursor: pointer;
+                         outline: none;
+                         border-radius: 0;
+                         transition: box-shadow 0.15s, background 0.15s, border-color 0.15s;
+                         z-index: 2;
+                         opacity: 0.97;
+                         box-sizing: border-box;
+                       }
+                       .captcha-tile.selected {
+                         background: rgba(80,80,80,0.50);
+                         box-shadow: none;
+                         border-color: #222;
+                       }
+                       .captcha-tile.correct {
+                         background: rgba(67,198,172,0.25);
+                         box-shadow: 0 0 0 2px #43c6ac;
+                         border-color: #43c6ac;
+                       }
+                       #ergebnis {
+                         min-height: 40px;
+                         font-size: 1.2rem;
+                         margin-top: 14px;
+                         text-align: center;
+                       }
+                       .richtig {
+                         background: #d4edda;
+                         color: #155724;
+                         border: 1px solid #c3e6cb;
+                         border-radius: 8px;
+                         padding: 12px;
+                         display: inline-block;
+                         font-size: 1.2rem;
+                       }
+                       .falsch {
+                         background: #f8d7da;
+                         color: #721c24;
+                         border: 1px solid #f5c6cb;
+                         border-radius: 8px;
+                         padding: 12px;
+                         display: inline-block;
+                         font-size: 1.2rem;
+                       }
+                       #pruefenBtn {
+                         font-size: 1.1rem;
+                         padding: 12px 28px;
+                         background: linear-gradient(90deg, #43c6ac 60%, #f8ffae 100%);
+                         color: #222;
+                         border: none;
+                         border-radius: 8px;
+                         font-weight: 600;
+                         cursor: pointer;
+                         box-shadow: 0 2px 8px #43c6ac22;
+                         transition: background 0.18s, color 0.18s;
+                         margin-top: 10px;
+                         display: none;
+                         margin-left: auto;
+                         margin-right: auto;
+                       }
+                       #pruefenBtn:disabled {
+                         background: #ccc;
+                         color: #888;
+                         cursor: not-allowed;
+                       }
+                       .nav-links {
+                         margin-top: 32px;
+                         text-align: center;
+                         width: 100%;
+                       }
+                       .nav-links a {
+                         color: #43c6ac;
+                         text-decoration: none;
+                         font-weight: bold;
+                         margin: 0 12px;
+                         font-size: 1.1rem;
+                         transition: color 0.18s;
+                       }
+                       .nav-links a:hover {
+                         color: #ffb347;
+                       }
+                       /* Memory Rätsel Styles */
+                       .instructions5, .phase, .countdown, .clickStatus {
+                         margin: 8px 0;
+                       }
+                       canvas {
+                         border: 3px solid #43c6ac;
+                         border-radius: 16px;
+                         background: #eee;
+                         box-shadow: 0 2px 12px #43c6ac22;
+                         margin: 18px 0;
+                         max-width: 100%;
+                         height: auto;
+                         display: block;
+                       }
+                       button {
+                         padding: 12px 32px;
+                         font-size: 1.08rem;
+                         background: linear-gradient(90deg, #43c6ac 60%, #f8ffae 100%);
+                         color: #222;
+                         border: none;
+                         border-radius: 8px;
+                         font-weight: 600;
+                         cursor: pointer;
+                         box-shadow: 0 2px 8px #43c6ac22;
+                         transition: background 0.18s, color 0.18s;
+                         margin: 10px 0;
+                       }
+                       button:hover {
+                         background: linear-gradient(90deg, #43c6ac 40%, #ffb347 100%);
+                         color: #fff;
+                       }
+                       button:disabled {
+                         background: #ccc;
+                         color: #888;
+                         cursor: not-allowed;
+                       }
+                       /* 10 Sekunden Screen */
+                       .overlay {
+                         position: absolute;
+                         top: 0; left: 0; right: 0; bottom: 0;
+                         background: linear-gradient(120deg, #43c6ac 0%, #f8ffae 100%);
+                         display: flex;
+                         align-items: center;
+                         justify-content: center;
+                         z-index: 99;
+                         border-radius: 18px;
+                         flex-direction: column;
+                         font-size: 2rem;
+                         color: #222;
+                         font-weight: bold;
+                         animation: fadein 0.5s;
+                       }
+                       @keyframes fadein {
+                         from { opacity: 0; }
+                         to { opacity: 1; }
+                       }
+                       @media (max-width: 900px) {
+                         .container { max-width: 99vw; }
+                         .captcha-grid { width: 92vw; height: 112vw; min-width: 0; min-height: 0; }
+                         canvas { width: 92vw !important; height: auto !important; }
+                       }
+                       @media (max-width: 600px) {
+                         .container { padding: 18px 2vw 18px 2vw; }
+                         h1 { font-size: 1.3rem; }
+                         .desc, .instructions { font-size: 1rem; }
+                         .captcha-grid { width: 92vw; height: 112vw; }
+                       }
+                     </style>
+                   </head>
+                   <body>
+                     <div class="container" id="mainContainer">
+                       <div id="content">
+                         <h1>🔍 Capture-Rätsel</h1>
+                         <div class="desc">Klicke alle Kacheln an, die auf deinem Dickschädel sind.<br>Wähle und bestätige dann deine Lösung!</div>
+                         <div class="captcha-grid" id="captchaGrid"></div>
+                         <button id="pruefenBtn" onclick="pruefeLoesung()">Lösung prüfen</button>
+                         <div id="ergebnis"></div>
+                         <div class="nav-links">
+                           <a href="index.html">← Zurück zur Startseite</a> | <a href="finale.html">→ Finalen Code eingeben</a>
+                         </div>
+                       </div>
+                     </div>
+                     <script>
+                       // --- Rätsel 4 ---
+                       const correctTiles = [2,3,4,6,7,8,10,11,12,14,15];
+                       const gridRows = 4, gridCols = 4;
+                       const grid = document.getElementById('captchaGrid');
+                       for(let i=0; i<gridRows*gridCols; i++) {
+                         const btn = document.createElement('button');
+                         btn.className = 'captcha-tile';
+                         btn.dataset.idx = i+1;
+                         btn.onclick = function() {
+                           btn.classList.toggle('selected');
+                           document.getElementById('ergebnis').innerHTML = '';
+                           updatePruefenBtn();
+                           btn.classList.remove('correct');
+                         };
+                         grid.appendChild(btn);
+                       }
+                       function updatePruefenBtn() {
+                         const selected = document.querySelectorAll('.captcha-tile.selected').length;
+                         const pruefenBtn = document.getElementById('pruefenBtn');
+                         pruefenBtn.style.display = selected > 0 ? 'block' : 'none';
+                       }
+                       function pruefeLoesung() {
+                         const selected = Array.from(document.querySelectorAll('.captcha-tile.selected'))
+                           .map(btn => parseInt(btn.dataset.idx));
+                         let allCorrect = correctTiles.every(idx => selected.includes(idx));
+                         let noWrong = selected.every(idx => correctTiles.includes(idx));
+                         const result = document.getElementById('ergebnis');
+                         if(selected.length === correctTiles.length && allCorrect && noWrong) {
+                           document.querySelectorAll('.captcha-tile').forEach(btn => {
+                             btn.classList.remove('correct');
+                             if(btn.classList.contains('selected') && correctTiles.includes(parseInt(btn.dataset.idx))) {
+                               btn.classList.add('correct');
+                             }
+                           });
+                           result.innerHTML = '<span class="richtig">🎉 Richtig! Die Ziffer für den finalen Code ist: <b>"... leider noch nicht"</b> ✅</span>';
+                           setTimeout(showOverlay, 1200); // Nach Erfolg Overlay zeigen
+                         } else {
+                           document.querySelectorAll('.captcha-tile').forEach(btn => {
+                             btn.classList.remove('selected','correct');
+                           });
+                           result.innerHTML = '<span class="falsch">❌ Falsch! Du musst von vorne beginnen.</span>';
+                           updatePruefenBtn();
+                         }
+                       }
+                       // --- Overlay & Memory Rätsel 5 ---
+                       function showOverlay() {
+                         const container = document.getElementById('mainContainer');
+                         const overlay = document.createElement('div');
+                         overlay.className = 'overlay';
+                         overlay.innerHTML = `
+                           <div>Ich glaub immer noch nicht dass du es wirklich bist..</div>
+                           <div style="font-size:1.2rem; margin-top:18px;">Weiter in <span id="countdown5">10</span> Sekunden...</div>
+                         `;
+                         container.appendChild(overlay);
+                         let sec = 10;
+                         const countdown = overlay.querySelector('#countdown5');
+                         const timer = setInterval(() => {
+                           sec--;
+                           countdown.textContent = sec;
+                           if(sec <= 0) {
+                             clearInterval(timer);
+                             overlay.remove();
+                             startMemoryGame();
+                           }
+                         }, 1000);
+                       }
+                       function startMemoryGame() {
+                         const content = document.getElementById('content');
+                         content.innerHTML = `
+                           <h1>🧠 Rätsel 5: 8x8 Memory Hell</h1>
+                           <div class="instructions instructions5">
+                             <p><strong>Regeln:</strong></p>
+                             <p>🔴 Phase 1: 6 rote Felder leuchten nacheinander auf (15s total)</p>
+                             <p>🕐 Phase 2: Klicke die Reihenfolge – <strong>richtige bleiben sichtbar!</strong></p>
+                             <p>❌ Falsch → <strong>alles weg, neu starten</strong></p>
+                           </div>
+                           <canvas id="memoryGrid" width="640" height="640"></canvas>
+                           <div class="phase" id="phase">Phase 1: Sequenz lernen</div>
+                           <div class="countdown" id="countdown">Klick "Start"!</div>
+                           <div class="clickStatus" id="clickStatus"></div>
+                           <button id="startBtn">🚀 Sequenz starten</button>
+                           <div class="nav-links">
+                             <a href="index.html">← Zurück zur Startseite</a> | <a href="finale.html">→ Finalen Code eingeben</a>
+                           </div>
+                         `;
+                         // --- Memory JS ---
+                         const canvas = document.getElementById('memoryGrid');
+                         const ctx = canvas.getContext('2d');
+                         const gridSize = 8;
+                         const cellSize = 80;
+                         const correctSequence = [5, 42, 23, 59, 12, 63];
+                         let currentStep = 0;
+                         let userClicks = [];
+                         let correctClicks = [];
+                         let gameActive = false;
+                         let sequenceTimer = null;
+                         let gamePhase = 'learn';
+                         const startBtn = document.getElementById('startBtn');
+                         function drawGrid() {
+                           ctx.clearRect(0, 0, canvas.width, canvas.height);
+                           ctx.fillStyle = '#eee';
+                           ctx.fillRect(0, 0, canvas.width, canvas.height);
+                           for (let row = 0; row < gridSize; row++) {
+                             for (let col = 0; col < gridSize; col++) {
+                               const x = col * cellSize;
+                               const y = row * cellSize;
+                               ctx.fillStyle = '#fff';
+                               ctx.fillRect(x + 2, y + 2, cellSize - 4, cellSize - 4);
+                               ctx.strokeStyle = '#43c6ac';
+                               ctx.lineWidth = 1;
+                               ctx.strokeRect(x + 2, y + 2, cellSize - 4, cellSize - 4);
+                             }
+                           }
+                           correctClicks.forEach(index => highlightCell(index, 'correct'));
+                         }
+                         function getIndexFromPosition(x, y) {
+                           const col = Math.floor(x / cellSize);
+                           const row = Math.floor(y / cellSize);
+                           const index = row * 8 + col;
+                           return Math.max(0, Math.min(index, 63));
+                         }
+                         function highlightCell(index, mode = 'sequence') {
+                           const row = Math.floor(index / 8);
+                           const col = index % 8;
+                           const x = col * cellSize + 2;
+                           const y = row * cellSize + 2;
+                           let color, shadowColor;
+                           if (mode === 'sequence') {
+                             color = '#ff4444';
+                             shadowColor = '#ff0000';
+                           } else if (mode === 'user') {
+                             color = '#44ff44';
+                             shadowColor = '#00ff00';
+                           } else {
+                             color = '#ffd700';
+                             shadowColor = '#ffaa00';
+                           }
+                           ctx.save();
+                           ctx.shadowColor = shadowColor;
+                           ctx.shadowBlur = 20;
+                           ctx.shadowOffsetX = 0;
+                           ctx.shadowOffsetY = 0;
+                           ctx.fillStyle = color;
+                           ctx.fillRect(x, y, cellSize - 4, cellSize - 4);
+                           ctx.shadowBlur = 0;
+                           ctx.restore();
+                           ctx.strokeStyle = '#43c6ac';
+                           ctx.lineWidth = 3;
+                           ctx.strokeRect(x, y, cellSize - 4, cellSize - 4);
+                         }
+                         function playSequence() {
+                           currentStep = 0;
+                           userClicks = [];
+                           correctClicks = [];
+                           gameActive = true;
+                           gamePhase = 'learn';
+                           startBtn.disabled = true;
+                           startBtn.textContent = '⏳ Lernphase läuft...';
+                           document.getElementById('phase').textContent = 'Phase 1: Sequenz lernen';
+                           document.getElementById('countdown').textContent = '15 Sekunden Sequenz läuft...';
+                           document.getElementById('clickStatus').textContent = '';
+                           sequenceTimer = setInterval(() => {
+                             drawGrid();
+                             if (currentStep < correctSequence.length) {
+                               const pos = correctSequence[currentStep];
+                               highlightCell(pos, 'sequence');
+                               document.getElementById('countdown').textContent =
+                                 `Merke: ${currentStep + 1}/${correctSequence.length}`;
+                               currentStep++;
+                             } else {
+                               clearInterval(sequenceTimer);
+                               sequenceTimer = null;
+                               gamePhase = 'click';
+                               gameActive = true;
+                               drawGrid();
+                               document.getElementById('phase').textContent = 'Phase 2: Jetzt klicken! (Richtige bleiben!)';
+                               document.getElementById('countdown').textContent = '🖱️ Klick 1/6';
+                               document.getElementById('clickStatus').textContent = 'Richtige Klicks bleiben gelb!';
+                               startBtn.disabled = false;
+                               startBtn.textContent = '🔄 Nochmal';
+                             }
+                           }, 2500);
+                         }
+                         canvas.addEventListener('click', function(e) {
+                           if (!gameActive || gamePhase === 'learn') return;
+                           const rect = canvas.getBoundingClientRect();
+                           const scaleX = canvas.width / rect.width;
+                           const scaleY = canvas.height / rect.height;
+                           const x = (e.clientX - rect.left) * scaleX;
+                           const y = (e.clientY - rect.top) * scaleY;
+                           const index = getIndexFromPosition(x, y);
+                           if (index === correctSequence[userClicks.length]) {
+                             userClicks.push(index);
+                             correctClicks.push(index);
+                             drawGrid();
+                             document.getElementById('clickStatus').textContent =
+                               `✅ ${userClicks.length}/6 richtig! Nächstes: ${userClicks.length + 1}`;
+                             if (userClicks.length === correctSequence.length) {
+                               setTimeout(() => {
+                                 showSuccess();
+                               }, 1000);
+                             }
+                           } else {
+                             userClicks = [];
+                             correctClicks = [];
+                             gameActive = false;
+                             gamePhase = 'learn';
+                             drawGrid();
+                             document.getElementById('countdown').textContent = '❌ FALSCH! Alles weg → Nochmal starten';
+                             document.getElementById('phase').textContent = 'Phase 1: Sequenz lernen';
+                             document.getElementById('clickStatus').textContent = '';
+                             startBtn.disabled = false;
+                           }
+                         });
+                         function showSuccess() {
+                           content.innerHTML = `
+                             <h1 style="font-size: 2.2rem; color: #43c6ac; margin-bottom: 18px;">🎉 GEWINN!</h1>
+                             <div style="background: #f8ffae; color: #222; padding: 32px; border-radius: 18px; display: inline-block; font-size: 2.5rem; font-weight: bold; margin: 18px; box-shadow: 0 2px 12px #43c6ac22; font-family: 'Courier New', monospace;">
+                               6
+                             </div>
+                             <p style="font-size: 1.3rem;">Dein PDF-Code ist: <strong>6</strong></p>
+                             <p style="font-size: 1.1rem;">Kopiere den Code für deine PDF! 🥳</p>
+                             <div class="nav-links" style="margin-top:28px;">
+                               <a href="index.html">← Zurück zur Startseite</a> | <a href="finale.html">→ Finalen Code eingeben</a>
+                             </div>
+                           `;
+                         }
+                         startBtn.addEventListener('click', playSequence);
+                         drawGrid();
+                       }
+                     </script>
+                   </body>
+                   </html>
