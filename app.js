@@ -1,4 +1,16 @@
-// ====== Daten ======
+import { db } from "./firebase.js";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  onSnapshot,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+/* =========================
+   Daten
+========================= */
+
 const TEAMS = ["Team1","Team2","Team3","Team4","Team5","Team6","Team7"];
 
 const GAME_MAP = {
@@ -10,7 +22,6 @@ const GAME_MAP = {
   F: "Mario Kart",
 };
 
-// Runden 1–9 aus deinem Plan (A–F werden via GAME_MAP umbenannt)
 const ROUNDS = [
   { round: 1, pause: "Team1", matches: [
     { game: "E", a: "Team2", b: "Team7" },
@@ -59,31 +70,82 @@ const ROUNDS = [
   ]},
 ];
 
-// ====== Speicherung ======
-const STORAGE_KEY = "spieleabend_v1";
+/* =========================
+   Session & Routing (Hash)
+   URL Beispiel:
+   .../#round=1&session=party123
+========================= */
 
-// state.results[roundIndex][matchIndex] = "A" | "D" | "B" | null
-// A => Team a gewinnt, B => Team b gewinnt, D => Draw
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { results: createEmptyResults() };
-    const parsed = JSON.parse(raw);
-    if (!parsed || !parsed.results) return { results: createEmptyResults() };
-    return parsed;
-  } catch {
-    return { results: createEmptyResults() };
+function parseHash() {
+  const h = location.hash.replace("#", "");
+  const params = new URLSearchParams(h);
+  const round = clamp(parseInt(params.get("round") || "1", 10), 1, ROUNDS.length);
+  const session = params.get("session") || "party";
+  return { round, session };
+}
+
+function setHash({ round, session }) {
+  const params = new URLSearchParams();
+  params.set("round", String(round));
+  params.set("session", session || "party");
+  location.hash = `#${params.toString()}`;
+}
+
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
+
+/* =========================
+   Firestore State
+========================= */
+
+function createEmptyResults() {
+  // results[roundIndex][matchIndex] = "A" | "D" | "B" | null
+  return ROUNDS.map(r => r.matches.map(() => null));
+}
+
+let { round: currentRound, session: sessionId } = parseHash();
+let state = { results: createEmptyResults() };
+let unsub = null;
+
+function sessionRef() {
+  return doc(db, "sessions", sessionId);
+}
+
+async function ensureSessionDoc() {
+  const snap = await getDoc(sessionRef());
+  if (!snap.exists()) {
+    await setDoc(sessionRef(), {
+      results: createEmptyResults(),
+      updatedAt: serverTimestamp()
+    });
   }
 }
-function saveState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-function createEmptyResults() {
-  return ROUNDS.map(r => r.matches.map(_ => null));
+
+async function writeResults(newResults) {
+  await setDoc(sessionRef(), {
+    results: newResults,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
 }
 
-// ====== Punkteberechnung ======
-function computePoints(state) {
+function subscribeSession() {
+  if (unsub) unsub();
+  unsub = onSnapshot(sessionRef(), (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    if (data?.results) {
+      state.results = data.results;
+      renderAll();
+    }
+  });
+}
+
+/* =========================
+   Punkteberechnung
+========================= */
+
+function computePoints() {
   const pts = Object.fromEntries(TEAMS.map(t => [t, 0]));
 
   state.results.forEach((roundRes, rIdx) => {
@@ -92,32 +154,21 @@ function computePoints(state) {
       const match = ROUNDS[rIdx].matches[mIdx];
       const a = match.a, b = match.b;
 
-      if (res === "A") {
-        pts[a] += 3;
-      } else if (res === "B") {
-        pts[b] += 3;
-      } else if (res === "D") {
-        pts[a] += 1;
-        pts[b] += 1;
-      }
+      if (res === "A") pts[a] += 3;
+      else if (res === "B") pts[b] += 3;
+      else if (res === "D") { pts[a] += 1; pts[b] += 1; }
     });
   });
 
   return pts;
 }
 
-// ====== Routing (Hash) ======
-function getRoundFromHash() {
-  const m = location.hash.match(/round=(\d+)/);
-  const n = m ? parseInt(m[1], 10) : 1;
-  return clamp(n, 1, ROUNDS.length);
-}
-function setRoundHash(round) {
-  location.hash = `#round=${round}`;
-}
-function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+/* =========================
+   UI (minimal, arbeitet mit deinem styles.css)
+========================= */
 
-// ====== Render ======
+// Falls du noch den "Firestore Test" Code drin hattest, entfernen wir das nicht.
+// Deine index.html hat schon Layout-Container. Hier erwarten wir die IDs:
 const els = {
   scoreTable: document.getElementById("scoreTable"),
   matchesContainer: document.getElementById("matchesContainer"),
@@ -129,8 +180,19 @@ const els = {
   resetBtn: document.getElementById("resetBtn"),
 };
 
-let state = loadState();
-let currentRound = getRoundFromHash();
+// Safety: falls jemand falsche HTML lädt
+const required = Object.entries(els).filter(([_, v]) => !v).map(([k]) => k);
+if (required.length) {
+  document.body.innerHTML = `
+    <div style="padding:16px;font-family:system-ui;color:#fff;background:#111">
+      <h2>Fehlende HTML-Elemente</h2>
+      <p>Ich finde diese IDs nicht in index.html:</p>
+      <pre>${required.join(", ")}</pre>
+      <p>Bitte stelle sicher, dass du die richtige index.html-Version nutzt.</p>
+    </div>
+  `;
+  throw new Error("Missing required DOM elements: " + required.join(", "));
+}
 
 function renderAll() {
   renderScoreboard();
@@ -139,9 +201,8 @@ function renderAll() {
 }
 
 function renderScoreboard() {
-  const pts = computePoints(state);
+  const pts = computePoints();
 
-  // sortiert nach Punkten (desc), dann Name
   const sorted = [...TEAMS].sort((t1, t2) => {
     const d = pts[t2] - pts[t1];
     return d !== 0 ? d : t1.localeCompare(t2);
@@ -161,6 +222,7 @@ function renderScoreboard() {
 
 function renderRoundNav() {
   const roundObj = ROUNDS[currentRound - 1];
+
   els.roundLabel.textContent = `Runde ${roundObj.round}`;
   els.pauseLabel.textContent = `Pause: ${roundObj.pause}`;
 
@@ -174,7 +236,7 @@ function renderRoundNav() {
     btn.className = "dot" + (r === currentRound ? " active" : "");
     btn.type = "button";
     btn.textContent = String(r);
-    btn.addEventListener("click", () => setRoundHash(r));
+    btn.addEventListener("click", () => setHash({ round: r, session: sessionId }));
     els.roundDots.appendChild(btn);
   }
 }
@@ -186,13 +248,11 @@ function renderMatches() {
   els.matchesContainer.innerHTML = "";
 
   round.matches.forEach((m, matchIdx) => {
-    const res = state.results[roundIdx][matchIdx]; // "A"|"D"|"B"|null
+    const res = state.results?.[roundIdx]?.[matchIdx] ?? null;
+    const gameName = GAME_MAP[m.game] ?? m.game;
 
     const card = document.createElement("div");
     card.className = "match";
-
-    const gameName = GAME_MAP[m.game] ?? m.game;
-
     card.innerHTML = `
       <div class="match-top">
         <div class="game-badge">${gameName}</div>
@@ -209,18 +269,23 @@ function renderMatches() {
         <button class="result-btn ${res==="B" ? "selected winB" : ""}" data-res="B" type="button">🏆 ${m.b}</button>
       </div>
 
-      <div class="small-muted">Tip: Klick auf das gleiche Ergebnis nochmal → setzt es zurück.</div>
+      <div class="small-muted">Klick nochmal auf dasselbe Ergebnis → zurücksetzen.</div>
     `;
 
-    // Events
     card.querySelectorAll(".result-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const chosen = btn.getAttribute("data-res");
         const current = state.results[roundIdx][matchIdx];
-        state.results[roundIdx][matchIdx] = (current === chosen) ? null : chosen;
+        const next = (current === chosen) ? null : chosen;
 
-        saveState(state);
+        // lokale Kopie updaten (snappy UI)
+        const newResults = state.results.map(r => r.slice());
+        newResults[roundIdx][matchIdx] = next;
+        state.results = newResults;
         renderAll();
+
+        // nach Firestore schreiben -> alle Clients bekommen live update
+        await writeResults(newResults);
       });
     });
 
@@ -228,24 +293,49 @@ function renderMatches() {
   });
 }
 
-// ====== Events ======
-window.addEventListener("hashchange", () => {
-  currentRound = getRoundFromHash();
+/* =========================
+   Events
+========================= */
+
+window.addEventListener("hashchange", async () => {
+  const parsed = parseHash();
+  const sessionChanged = parsed.session !== sessionId;
+
+  currentRound = parsed.round;
+
+  if (sessionChanged) {
+    sessionId = parsed.session;
+    await ensureSessionDoc();
+    subscribeSession();
+  }
+
   renderAll();
 });
 
-els.prevBtn.addEventListener("click", () => setRoundHash(currentRound - 1));
-els.nextBtn.addEventListener("click", () => setRoundHash(currentRound + 1));
+els.prevBtn.addEventListener("click", () => setHash({ round: currentRound - 1, session: sessionId }));
+els.nextBtn.addEventListener("click", () => setHash({ round: currentRound + 1, session: sessionId }));
 
-els.resetBtn.addEventListener("click", () => {
-  const ok = confirm("Wirklich alles zurücksetzen? (Ergebnisse & Punkte)");
+els.resetBtn.addEventListener("click", async () => {
+  const ok = confirm(`Wirklich alles zurücksetzen? (Session: ${sessionId})`);
   if (!ok) return;
-  state = { results: createEmptyResults() };
-  saveState(state);
+
+  const empty = createEmptyResults();
+  state.results = empty;
   renderAll();
+  await writeResults(empty);
 });
 
-// Initial
-if (!location.hash) setRoundHash(1);
-currentRound = getRoundFromHash();
-renderAll();
+/* =========================
+   Start
+========================= */
+
+(async function init() {
+  // Hash setzen, falls leer
+  if (!location.hash) setHash({ round: 1, session: "party" });
+
+  ({ round: currentRound, session: sessionId } = parseHash());
+
+  await ensureSessionDoc();
+  subscribeSession();
+  renderAll();
+})();
