@@ -114,11 +114,13 @@ function sessionRef() {
 
 async function ensureSessionDoc() {
   const snap = await getDoc(sessionRef());
-  if (!snap.exists()) {
+
+  // Wenn Session neu ist ODER noch keine results hat -> results anlegen (merge!)
+  if (!snap.exists() || !snap.data()?.results) {
     await setDoc(sessionRef(), {
       results: createEmptyResults(),
       updatedAt: serverTimestamp()
-    });
+    }, { merge: true });
   }
 }
 
