@@ -100,9 +100,28 @@ function clamp(n, min, max) {
 ========================= */
 
 function createEmptyResults() {
-  // results[roundIndex][matchIndex] = "A" | "D" | "B" | null
-  return ROUNDS.map(r => r.matches.map(() => null));
+  // results["r{roundIndex}m{matchIndex}"] = "A" | "B" | "D" | null
+  const obj = {};
+  for (let r = 0; r < ROUNDS.length; r++) {
+    for (let m = 0; m < ROUNDS[r].matches.length; m++) {
+      obj[`r${r}m${m}`] = null;
+    }
+  }
+  return obj;
 }
+function keyOf(roundIdx, matchIdx) {
+  return `r${roundIdx}m${matchIdx}`;
+}
+
+function getResult(roundIdx, matchIdx) {
+  return state.results?.[keyOf(roundIdx, matchIdx)] ?? null;
+}
+
+function setResultLocal(roundIdx, matchIdx, value) {
+  const k = keyOf(roundIdx, matchIdx);
+  state.results = { ...(state.results || {}), [k]: value };
+}
+
 
 let { round: currentRound, session: sessionId } = parseHash();
 let state = { results: createEmptyResults() };
@@ -114,8 +133,6 @@ function sessionRef() {
 
 async function ensureSessionDoc() {
   const snap = await getDoc(sessionRef());
-
-  // Wenn Session neu ist ODER noch keine results hat -> results anlegen (merge!)
   if (!snap.exists() || !snap.data()?.results) {
     await setDoc(sessionRef(), {
       results: createEmptyResults(),
@@ -124,12 +141,14 @@ async function ensureSessionDoc() {
   }
 }
 
+
 async function writeResults(newResults) {
   await setDoc(sessionRef(), {
-    results: newResults,
+    results: newResults,        // <- Object, kein Nested Array
     updatedAt: serverTimestamp()
   }, { merge: true });
 }
+
 
 function subscribeSession() {
   if (unsub) unsub();
@@ -150,20 +169,23 @@ function subscribeSession() {
 function computePoints() {
   const pts = Object.fromEntries(TEAMS.map(t => [t, 0]));
 
-  state.results.forEach((roundRes, rIdx) => {
-    roundRes.forEach((res, mIdx) => {
-      if (!res) return;
-      const match = ROUNDS[rIdx].matches[mIdx];
+  for (let r = 0; r < ROUNDS.length; r++) {
+    for (let m = 0; m < ROUNDS[r].matches.length; m++) {
+      const res = getResult(r, m);
+      if (!res) continue;
+
+      const match = ROUNDS[r].matches[m];
       const a = match.a, b = match.b;
 
       if (res === "A") pts[a] += 3;
       else if (res === "B") pts[b] += 3;
       else if (res === "D") { pts[a] += 1; pts[b] += 1; }
-    });
-  });
+    }
+  }
 
   return pts;
 }
+
 
 /* =========================
    UI (minimal, arbeitet mit deinem styles.css)
@@ -250,7 +272,7 @@ function renderMatches() {
   els.matchesContainer.innerHTML = "";
 
   round.matches.forEach((m, matchIdx) => {
-    const res = state.results?.[roundIdx]?.[matchIdx] ?? null;
+    const res = getResult(roundIdx, matchIdx);
     const gameName = GAME_MAP[m.game] ?? m.game;
 
     const card = document.createElement("div");
@@ -277,17 +299,16 @@ function renderMatches() {
     card.querySelectorAll(".result-btn").forEach(btn => {
       btn.addEventListener("click", async () => {
         const chosen = btn.getAttribute("data-res");
-        const current = state.results[roundIdx][matchIdx];
+        const current = getResult(roundIdx, matchIdx);
         const next = (current === chosen) ? null : chosen;
 
-        // lokale Kopie updaten (snappy UI)
-        const newResults = state.results.map(r => r.slice());
-        newResults[roundIdx][matchIdx] = next;
-        state.results = newResults;
+        // lokal setzen + UI
+        setResultLocal(roundIdx, matchIdx, next);
         renderAll();
 
-        // nach Firestore schreiben -> alle Clients bekommen live update
-        await writeResults(newResults);
+        // in Firestore schreiben
+        await writeResults(state.results);
+
       });
     });
 
