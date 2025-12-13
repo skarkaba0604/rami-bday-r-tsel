@@ -1,158 +1,65 @@
-<!DOCTYPE html>
-    <html lang="de">
-    <head>
-      <meta charset="UTF-8" />
-      <title>Schnitzeljagd zum Geburtstag </title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-        body {
-          min-height: 100vh;
-          margin: 0;
-          font-family: 'Quicksand', Arial, sans-serif;
-          background: linear-gradient(135deg, #f8ffae 0%, #43c6ac 100%);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: flex-start;
-        }
-        h1 {
-          margin-top: 40px;
-          font-size: 2.7rem;
-          color: #222;
-          letter-spacing: 1px;
-          text-align: center;
-          text-shadow: 0 2px 12px #fff7, 0 1px 0 #fff;
-        }
-        .subtitle {
-          font-size: 1.3rem;
-          color: #444;
-          margin-bottom: 30px;
-          text-align: center;
-        }
-        .riddle-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 28px;
-          justify-content: center;
-          margin-bottom: 40px;
-        }
-        .riddle-card {
-          background: #fff;
-          border-radius: 18px;
-          box-shadow: 0 4px 24px #0001, 0 1.5px 0 #43c6ac;
-          padding: 32px 28px 24px 28px;
-          min-width: 220px;
-          max-width: 260px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          transition: transform 0.18s, box-shadow 0.18s;
-        }
-        .riddle-card:hover {
-          transform: translateY(-7px) scale(1.04);
-          box-shadow: 0 8px 32px #43c6ac44, 0 2px 0 #43c6ac;
-        }
-        .riddle-icon {
-          font-size: 2.2rem;
-          margin-bottom: 12px;
-        }
-        .riddle-title {
-          font-size: 1.2rem;
-          font-weight: bold;
-          color: #222;
-          margin-bottom: 10px;
-          letter-spacing: 0.5px;
-        }
-        .riddle-link {
-          margin-top: 8px;
-          background: linear-gradient(90deg, #43c6ac 60%, #f8ffae 100%);
-          color: #222;
-          font-size: 1.1rem;
-          font-weight: 600;
-          border: none;
-          border-radius: 8px;
-          padding: 10px 22px;
-          text-decoration: none;
-          box-shadow: 0 2px 8px #43c6ac22;
-          transition: background 0.18s, color 0.18s;
-          cursor: pointer;
-        }
-        .riddle-link:hover {
-          background: linear-gradient(90deg, #f8ffae 60%, #43c6ac 100%);
-          color: #0a6b5c;
-        }
-        .final-btn {
-          display: inline-block;
-          margin: 30px auto 0 auto;
-          background: linear-gradient(90deg, #ffb347 60%, #ffcc33 100%);
-          color: #fff;
-          font-size: 1.3rem;
-          font-weight: bold;
-          border: none;
-          border-radius: 12px;
-          padding: 18px 38px;
-          box-shadow: 0 4px 18px #ffb34744;
-          text-decoration: none;
-          letter-spacing: 1px;
-          transition: background 0.18s, color 0.18s, transform 0.15s;
-          cursor: pointer;
-        }
-        .final-btn:hover {
-          background: linear-gradient(90deg, #ffcc33 60%, #ffb347 100%);
-          color: #fffde4;
-          transform: scale(1.04);
-        }
-        .footer {
-          margin: 50px 0 18px 0;
-          color: #555;
-          font-size: 1rem;
-          text-align: center;
-          opacity: 0.7;
-        }
-        @media (max-width: 700px) {
-          .riddle-list { flex-direction: column; gap: 18px; }
-          .riddle-card { min-width: 0; width: 90vw; max-width: 98vw; }
-        }
-      </style>
-      <link href="https://fonts.googleapis.com/css?family=Quicksand:400,700&display=swap" rel="stylesheet">
-    </head>
-    <body>
-      <h1>🎈 Happy Birthday, Bruder! - TSTE 🎈</h1>
-      <div class="subtitle">
-        Deine persönliche Schnitzeljagd wartet!<br>
-        Löse die Rätsel, sammle die Ziffern und knacke den finalen Code.
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spieleabend – Spielplan & Punkte</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="title">
+        <h1>Spieleabend</h1>
+        <p class="subtitle">Punkteübersicht & Runden</p>
       </div>
-      <div class="riddle-list">
-        <div class="riddle-card">
-          <div class="riddle-icon">🕵️‍♂️</div>
-          <div class="riddle-title">Rätsel 1</div>
-          <a class="riddle-link" href="raetsel1.html">Los geht's</a>
-        </div>
-        <div class="riddle-card">
-          <div class="riddle-icon">🧩</div>
-          <div class="riddle-title">Rätsel 2</div>
-          <a class="riddle-link" href="raetsel2.html">Los geht's</a>
-        </div>
-        <div class="riddle-card">
-          <div class="riddle-icon">🧠</div>
-          <div class="riddle-title">Rätsel 3</div>
-          <a class="riddle-link" href="raetsel3.html">Los geht's</a>
-        </div>
-        <div class="riddle-card">
-          <div class="riddle-icon">🔍</div>
-          <div class="riddle-title">Rätsel 4</div>
-          <a class="riddle-link" href="raetsel4.html">Los geht's</a>
-        </div>
-        <div class="riddle-card">
-          <div class="riddle-icon">🎲</div>
-          <div class="riddle-title">Rätsel 5</div>
-          <a class="riddle-link" href="raetsel5.html">Los geht's</a>
-        </div>
+
+      <div class="header-actions">
+        <button id="resetBtn" class="btn btn-ghost" type="button" title="Setzt alle Ergebnisse & Punkte zurück">
+          Reset
+        </button>
       </div>
-      <a class="final-btn" href="finale.html">🏆 Finalen Code eingeben</a>
-      <div class="footer">
-        Viel Spaß und Erfolg!<br>
-        <a href="https://github.com/skarkaba0604" style="color:#43c6ac;text-decoration:none;">by skarkaba0604</a>
+    </div>
+
+    <section class="scoreboard card">
+      <div class="card-head">
+        <h2>Punkte</h2>
+        <div class="hint">Sieg: +3 · Unentschieden: +1/+1</div>
       </div>
-    </body>
-    </html>
+      <div id="scoreTable" class="score-table" aria-live="polite"></div>
+    </section>
+  </header>
+
+  <main class="main">
+    <section class="round-nav card">
+      <div class="round-nav-inner">
+        <button id="prevRoundBtn" class="btn" type="button">← Runde</button>
+
+        <div class="round-title">
+          <div class="round-kicker">Aktuelle Runde</div>
+          <div id="roundLabel" class="round-label">Runde 1</div>
+          <div id="pauseLabel" class="pause-label">Pause: –</div>
+        </div>
+
+        <button id="nextRoundBtn" class="btn" type="button">Runde →</button>
+      </div>
+
+      <div class="round-dots" id="roundDots" aria-label="Runden auswählen"></div>
+    </section>
+
+    <section class="matches card">
+      <div class="card-head">
+        <h2>Spiele</h2>
+        <div class="hint">Tippe auf das Ergebnis, um Punkte zu vergeben.</div>
+      </div>
+      <div id="matchesContainer" class="matches-grid"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small>Speichert automatisch im Browser (localStorage).</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
